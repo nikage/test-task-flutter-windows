@@ -1,6 +1,13 @@
-part of 'todo_cubit.dart';
+part of 'todo_bloc.dart';
 
-@freezed
-class TodoState with _$TodoState {
-  const factory TodoState.initial() = _Initial;
+abstract class TodoState {}
+
+class TodoInitial extends TodoState {}
+
+class TodoLoading extends TodoState {}
+
+class TodoLoaded extends TodoState {
+  final List<Todo> todos;
+
+  TodoLoaded({required this.todos});
 }
