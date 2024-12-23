@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../domain/entities/todo.dart';
 import '../bloc/todo_bloc.dart';
 
 class HomePage extends StatelessWidget {
@@ -74,10 +75,66 @@ class HomePage extends StatelessWidget {
           return const Center(child: Text('No todos found'));
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.add),
-      ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                final TextEditingController titleController = TextEditingController();
+                final TextEditingController descriptionController = TextEditingController();
+
+                return AlertDialog(
+                  title: const Text('Add Todo'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: titleController,
+                        decoration: const InputDecoration(
+                          labelText: 'Title',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: descriptionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Description',
+                        ),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        final title = titleController.text;
+                        final description = descriptionController.text;
+
+                        if (title.isNotEmpty && description.isNotEmpty) {
+                          final newTodo = Todo(
+                            title: title,
+                            description: description,
+                            isCompleted: false,
+                          );
+
+                          context.read<TodoBloc>().add(AddTodoEvent(newTodo));
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text('Add'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+          child: const Icon(Icons.add),
+        ),
     );
   }
 }
