@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/entities/todo.dart';
+import '../../injectable.dart';
 import '../bloc/todo_bloc.dart';
 
 class HomePage extends StatelessWidget {
@@ -122,7 +123,7 @@ class HomePage extends StatelessWidget {
                             isCompleted: false,
                           );
 
-                          context.read<TodoBloc>().add(AddTodoEvent(newTodo));
+                          DI<TodoBloc>().add(AddTodoEvent(newTodo));
                           Navigator.pop(context);
                         }
                       },

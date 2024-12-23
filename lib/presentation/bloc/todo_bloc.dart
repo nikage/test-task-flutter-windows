@@ -1,14 +1,20 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
+import 'package:todo_app/injectable.dart';
+
 import '../../domain/entities/todo.dart';
 import '../../domain/repositories/todo_repository.dart';
 
 part 'todo_event.dart';
 part 'todo_state.dart';
 
+@injectable
 class TodoBloc extends Bloc<TodoEvent, TodoState> {
   final TodoRepository repository;
 
-  TodoBloc(this.repository) : super(TodoInitial()) {
+  TodoBloc()
+      : this.repository = DI<TodoRepository>(),
+        super(TodoInitial()) {
     on<LoadTodosEvent>((event, emit) async {
       emit(TodoLoading());
       final todos = await repository.getTodos();

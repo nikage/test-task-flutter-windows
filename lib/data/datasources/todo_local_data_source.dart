@@ -1,11 +1,14 @@
+
+import 'package:injectable/injectable.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+@LazySingleton()
 class TodoLocalDataSource {
-  static final TodoLocalDataSource instance = TodoLocalDataSource._init();
+  // static final TodoLocalDataSource instance = TodoLocalDataSource._init();
   static Database? _database;
 
-  TodoLocalDataSource._init();
+  // TodoLocalDataSource._init();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -46,22 +49,22 @@ class TodoLocalDataSource {
   }
 
   Future<List<Map<String, dynamic>>> getTodos() async {
-    final db = await instance.database;
+    final db = await database;
     return db.query('todos');
   }
 
   Future<int> insertTodo(Map<String, dynamic> todo) async {
-    final db = await instance.database;
+    final db = await database;
     return db.insert('todos', todo);
   }
 
   Future<int> updateTodo(Map<String, dynamic> todo, int id) async {
-    final db = await instance.database;
+    final db = await database;
     return db.update('todos', todo, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<int> deleteTodo(int id) async {
-    final db = await instance.database;
+    final db = await database;
     return db.delete('todos', where: 'id = ?', whereArgs: [id]);
   }
 }

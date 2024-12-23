@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../data/datasources/todo_local_data_source.dart';
-import '../data/repositories/todo_repository_impl.dart';
+import 'package:todo_app/injectable.dart';
+
 import '../presentation/bloc/todo_bloc.dart';
 import '../presentation/pages/home_page.dart';
 
 void main() {
-  final dataSource = TodoLocalDataSource.instance;
-  final repository = TodoRepositoryImpl(dataSource);
+  configureDependencies();
+
 
   runApp(
-    MyApp(repository: repository),
+    MyApp(),
   );
 }
 
 class MyApp extends StatelessWidget {
-  final TodoRepositoryImpl repository;
+  // final TodoRepository repository =  DI<TodoRepository>();
 
-  const MyApp({Key? key, required this.repository}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'To-Do App',
       home: BlocProvider(
-        create: (_) => TodoBloc(repository)..add(LoadTodosEvent()),
+        create: (_) => DI<TodoBloc>()..add(LoadTodosEvent()),
         child: const HomePage(),
       ),
     );

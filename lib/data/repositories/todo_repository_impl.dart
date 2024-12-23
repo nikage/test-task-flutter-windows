@@ -1,12 +1,18 @@
+import 'package:injectable/injectable.dart';
+
 import '../../domain/entities/todo.dart';
 import '../../domain/repositories/todo_repository.dart';
 import '../datasources/todo_local_data_source.dart';
 import '../models/todo_model.dart';
 
+@LazySingleton(as: TodoRepository)
 class TodoRepositoryImpl implements TodoRepository {
-  final TodoLocalDataSource dataSource;
+  TodoLocalDataSource dataSource;
 
-  TodoRepositoryImpl(this.dataSource);
+
+  TodoRepositoryImpl({required TodoLocalDataSource this.dataSource}){
+    // dataSource = DI<TodoLocalDataSource>();
+  }
 
   @override
   Future<List<Todo>> getTodos() async {

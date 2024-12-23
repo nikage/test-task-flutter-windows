@@ -44,3 +44,4 @@ app.*.map.json
 
 **/*.freezed.dart
 **/*.g.dart
+lib/injectable.config.dart
