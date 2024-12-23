@@ -22,7 +22,12 @@ class HomePage extends StatelessWidget {
               itemBuilder: (context, index) {
                 final todo = state.todos[index];
                 return ListTile(
-                  title: Text(todo.title),
+                  title: Row(
+                    children: [
+                      Text(todo.title),
+                      Text(todo.description),
+                    ],
+                  ),
                   trailing: Checkbox(
                     value: todo.isCompleted,
                     onChanged: (value) {
