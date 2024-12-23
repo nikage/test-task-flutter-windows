@@ -9,8 +9,7 @@ import '../models/todo_model.dart';
 class TodoRepositoryImpl implements TodoRepository {
   TodoLocalDataSource dataSource;
 
-
-  TodoRepositoryImpl({required TodoLocalDataSource this.dataSource}){
+  TodoRepositoryImpl({required TodoLocalDataSource this.dataSource}) {
     // dataSource = DI<TodoLocalDataSource>();
   }
 
@@ -22,9 +21,17 @@ class TodoRepositoryImpl implements TodoRepository {
 
   @override
   Future<void> addTodo(Todo todo) async {
-    final model =
-        TodoModel(id: null, title: todo.title, isCompleted: todo.isCompleted);
-    await dataSource.insertTodo(model.toJson());
+    final model = TodoModel(
+      id: null,
+      title: todo.title,
+      description: todo.description,
+      isCompleted: todo.isCompleted,
+    );
+    try {
+      await dataSource.insertTodo(model.toJson());
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override

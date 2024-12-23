@@ -8,7 +8,7 @@ import '../../domain/repositories/todo_repository.dart';
 part 'todo_event.dart';
 part 'todo_state.dart';
 
-@injectable
+@lazySingleton
 class TodoBloc extends Bloc<TodoEvent, TodoState> {
   final TodoRepository repository;
 
@@ -22,7 +22,11 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
     });
 
     on<AddTodoEvent>((event, emit) async {
-      await repository.addTodo(event.todo);
+      try {
+        await repository.addTodo(event.todo);
+      } catch (e) {
+        print(e);
+      }
       add(LoadTodosEvent());
     });
 
