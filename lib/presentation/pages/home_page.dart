@@ -59,15 +59,26 @@ class HomePage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  trailing: Checkbox(
-                    value: todo.isCompleted,
-                    onChanged: (value) {
-                      context.read<TodoBloc>().add(
-                            UpdateTodoEvent(
-                              todo.copyWith(isCompleted: value ?? false),
-                            ),
-                          );
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () {
+                          DI<TodoBloc>().add(DeleteTodoEvent(todo.id!));
+                        },
+                      ),
+                      Checkbox(
+                        value: todo.isCompleted,
+                        onChanged: (value) {
+                          context.read<TodoBloc>().add(
+                                UpdateTodoEvent(
+                                  todo.copyWith(isCompleted: value ?? false),
+                                ),
+                              );
+                        },
+                      ),
+                    ],
                   ),
                 );
               },
@@ -76,66 +87,68 @@ class HomePage extends StatelessWidget {
           return const Center(child: Text('No todos found'));
         },
       ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                final TextEditingController titleController = TextEditingController();
-                final TextEditingController descriptionController = TextEditingController();
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              final TextEditingController titleController =
+                  TextEditingController();
+              final TextEditingController descriptionController =
+                  TextEditingController();
 
-                return AlertDialog(
-                  title: const Text('Add Todo'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        controller: titleController,
-                        decoration: const InputDecoration(
-                          labelText: 'Title',
-                        ),
+              return AlertDialog(
+                title: const Text('Add Todo'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Title',
                       ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: descriptionController,
-                        decoration: const InputDecoration(
-                          labelText: 'Description',
-                        ),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Cancel'),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        final title = titleController.text;
-                        final description = descriptionController.text;
-
-                        if (title.isNotEmpty && description.isNotEmpty) {
-                          final newTodo = Todo(
-                            title: title,
-                            description: description,
-                            isCompleted: false,
-                          );
-
-                          DI<TodoBloc>().add(AddTodoEvent(newTodo));
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: const Text('Add'),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: descriptionController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                      ),
                     ),
                   ],
-                );
-              },
-            );
-          },
-          child: const Icon(Icons.add),
-        ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      final title = titleController.text;
+                      final description = descriptionController.text;
+
+                      if (title.isNotEmpty && description.isNotEmpty) {
+                        final newTodo = Todo(
+                          title: title,
+                          description: description,
+                          isCompleted: false,
+                        );
+
+                        DI<TodoBloc>().add(AddTodoEvent(newTodo));
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
