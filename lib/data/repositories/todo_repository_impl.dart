@@ -16,13 +16,19 @@ class TodoRepositoryImpl implements TodoRepository {
 
   @override
   Future<void> addTodo(Todo todo) async {
-    final model = TodoModel(id: null, title: todo.title, isCompleted: todo.isCompleted);
+    final model =
+        TodoModel(id: null, title: todo.title, isCompleted: todo.isCompleted);
     await dataSource.insertTodo(model.toJson());
   }
 
   @override
   Future<void> updateTodo(Todo todo) async {
-    final model = TodoModel(id: todo.id, title: todo.title, isCompleted: todo.isCompleted);
+    final model = TodoModel(
+      id: todo.id,
+      title: todo.title,
+      description: todo.description,
+      isCompleted: todo.isCompleted,
+    );
     await dataSource.updateTodo(model.toJson(), todo.id!);
   }
 

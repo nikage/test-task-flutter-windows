@@ -1,5 +1,5 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 class TodoLocalDataSource {
   static final TodoLocalDataSource instance = TodoLocalDataSource._init();
@@ -17,7 +17,19 @@ class TodoLocalDataSource {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return openDatabase(path, version: 1, onCreate: _createDB);
+    return openDatabase(
+      path,
+      version: 2,
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+          'ALTER TABLE todos ADD COLUMN description TEXT NOT NULL DEFAULT ""');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -25,6 +37,7 @@ class TodoLocalDataSource {
       CREATE TABLE todos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
+        description TEXT NOT NULL,
         isCompleted INTEGER NOT NULL
       )
     ''';

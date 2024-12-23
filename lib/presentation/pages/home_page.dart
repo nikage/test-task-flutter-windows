@@ -24,8 +24,37 @@ class HomePage extends StatelessWidget {
                 return ListTile(
                   title: Row(
                     children: [
-                      Text(todo.title),
-                      Text(todo.description),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: todo.title,
+                          decoration: const InputDecoration(
+                            hintText: 'Title',
+                          ),
+                          onChanged: (newValue) {
+                            context.read<TodoBloc>().add(
+                                  UpdateTodoEvent(
+                                    todo.copyWith(title: newValue),
+                                  ),
+                                );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: todo.description,
+                          decoration: const InputDecoration(
+                            hintText: 'Description',
+                          ),
+                          onChanged: (newValue) {
+                            context.read<TodoBloc>().add(
+                                  UpdateTodoEvent(
+                                    todo.copyWith(description: newValue),
+                                  ),
+                                );
+                          },
+                        ),
+                      ),
                     ],
                   ),
                   trailing: Checkbox(
