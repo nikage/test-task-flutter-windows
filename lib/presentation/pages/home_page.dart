@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../bloc/todo_bloc.dart';
 
 class HomePage extends StatelessWidget {
@@ -40,9 +41,7 @@ class HomePage extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add new todo logic
-        },
+        onPressed: () {},
         child: const Icon(Icons.add),
       ),
     );
