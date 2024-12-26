@@ -23,6 +23,12 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return FluentApp(
+      localizationsDelegates: const [
+        FluentLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''), // Add other supported locales here
+      ],
       theme: FluentThemeData(
         brightness: Brightness.light,
         acrylicBackgroundColor: Colors.transparent,
