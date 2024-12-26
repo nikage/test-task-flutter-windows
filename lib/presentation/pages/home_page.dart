@@ -17,6 +17,9 @@ class _HomePageState extends State<HomePage> {
   String descriptionFilter = '';
   String statusFilter = 'All';
 
+  String sortBy = 'Title';
+  bool isAscending = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,12 +28,10 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
-          // Filter Row
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                // Title Filter
                 Expanded(
                   child: TextField(
                     decoration: const InputDecoration(
@@ -44,7 +45,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Description Filter
                 Expanded(
                   child: TextField(
                     decoration: const InputDecoration(
@@ -58,7 +58,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Status Filter
                 DropdownButton<String>(
                   value: statusFilter,
                   onChanged: (value) {
@@ -70,25 +69,59 @@ class _HomePageState extends State<HomePage> {
                   },
                   items: const [
                     DropdownMenuItem(value: 'All', child: Text('All')),
-                    DropdownMenuItem(value: 'Completed', child: Text('Completed')),
-                    DropdownMenuItem(value: 'Incomplete', child: Text('Incomplete')),
+                    DropdownMenuItem(
+                        value: 'Completed', child: Text('Completed')),
+                    DropdownMenuItem(
+                        value: 'Incomplete', child: Text('Incomplete')),
                   ],
                 ),
               ],
             ),
           ),
-          // To-Do List
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                const Text('Sort by:'),
+                const SizedBox(width: 10),
+                DropdownButton<String>(
+                  value: sortBy,
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        sortBy = value;
+                      });
+                    }
+                  },
+                  items: const [
+                    DropdownMenuItem(value: 'Title', child: Text('Title')),
+                    DropdownMenuItem(
+                        value: 'Description', child: Text('Description')),
+                    DropdownMenuItem(value: 'Status', child: Text('Status')),
+                  ],
+                ),
+                const SizedBox(width: 10),
+                IconButton(
+                  icon: Icon(
+                      isAscending ? Icons.arrow_upward : Icons.arrow_downward),
+                  onPressed: () {
+                    setState(() {
+                      isAscending = !isAscending;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: BlocBuilder<TodoBloc, TodoState>(
               builder: (context, state) {
                 if (state is TodoLoading) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (state is TodoLoaded) {
-                  // Apply filters
-                  final filteredTodos = state.todos.where((todo) {
-                    final matchesTitle = todo.title
-                        .toLowerCase()
-                        .contains(titleFilter);
+                  var filteredTodos = state.todos.where((todo) {
+                    final matchesTitle =
+                        todo.title.toLowerCase().contains(titleFilter);
                     final matchesDescription = todo.description
                         .toLowerCase()
                         .contains(descriptionFilter);
@@ -96,10 +129,26 @@ class _HomePageState extends State<HomePage> {
                         (statusFilter == 'Completed' && todo.isCompleted) ||
                         (statusFilter == 'Incomplete' && !todo.isCompleted);
 
-                    return matchesTitle &&
-                        matchesDescription &&
-                        matchesStatus;
+                    return matchesTitle && matchesDescription && matchesStatus;
                   }).toList();
+
+                  filteredTodos.sort((a, b) {
+                    int comparison = 0;
+                    switch (sortBy) {
+                      case 'Title':
+                        comparison = a.title.compareTo(b.title);
+                        break;
+                      case 'Description':
+                        comparison = a.description.compareTo(b.description);
+                        break;
+                      case 'Status':
+                        comparison = a.isCompleted
+                            ? (b.isCompleted ? 0 : 1)
+                            : (b.isCompleted ? -1 : 0);
+                        break;
+                    }
+                    return isAscending ? comparison : -comparison;
+                  });
 
                   return ListView.builder(
                     itemCount: filteredTodos.length,
@@ -116,10 +165,10 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 onChanged: (newValue) {
                                   context.read<TodoBloc>().add(
-                                    UpdateTodoEvent(
-                                      todo.copyWith(title: newValue),
-                                    ),
-                                  );
+                                        UpdateTodoEvent(
+                                          todo.copyWith(title: newValue),
+                                        ),
+                                      );
                                 },
                               ),
                             ),
@@ -132,10 +181,10 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 onChanged: (newValue) {
                                   context.read<TodoBloc>().add(
-                                    UpdateTodoEvent(
-                                      todo.copyWith(description: newValue),
-                                    ),
-                                  );
+                                        UpdateTodoEvent(
+                                          todo.copyWith(description: newValue),
+                                        ),
+                                      );
                                 },
                               ),
                             ),
@@ -154,11 +203,11 @@ class _HomePageState extends State<HomePage> {
                               value: todo.isCompleted,
                               onChanged: (value) {
                                 context.read<TodoBloc>().add(
-                                  UpdateTodoEvent(
-                                    todo.copyWith(
-                                        isCompleted: value ?? false),
-                                  ),
-                                );
+                                      UpdateTodoEvent(
+                                        todo.copyWith(
+                                            isCompleted: value ?? false),
+                                      ),
+                                    );
                               },
                             ),
                           ],
@@ -179,9 +228,9 @@ class _HomePageState extends State<HomePage> {
             context: context,
             builder: (context) {
               final TextEditingController titleController =
-              TextEditingController();
+                  TextEditingController();
               final TextEditingController descriptionController =
-              TextEditingController();
+                  TextEditingController();
 
               return AlertDialog(
                 title: const Text('Add Todo'),
