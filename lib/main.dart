@@ -16,7 +16,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  // final TodoRepository repository =  DI<TodoRepository>();
 
   MyApp({Key? key}) : super(key: key);
 

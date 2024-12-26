@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
         FluentLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('en', ''), // Add other supported locales here
+        Locale('en', ''),
       ],
       theme: FluentThemeData(
         brightness: Brightness.light,
@@ -152,39 +152,85 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Title',
-                                  style: FluentTheme.of(context)
-                                      .typography
-                                      .bodyStrong,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      if (sortBy == 'Title') {
+                                        isAscending = !isAscending;
+                                      } else {
+                                        sortBy = 'Title';
+                                        isAscending = true;
+                                      }
+                                    });
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('Title'),
+                                      Icon(
+                                        isAscending && sortBy == 'Title'
+                                            ? FluentIcons.sort_up
+                                            : FluentIcons.sort_down,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Description',
-                                  style: FluentTheme.of(context)
-                                      .typography
-                                      .bodyStrong,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      if (sortBy == 'Description') {
+                                        isAscending = !isAscending;
+                                      } else {
+                                        sortBy = 'Description';
+                                        isAscending = true;
+                                      }
+                                    });
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('Description'),
+                                      Icon(
+                                        isAscending && sortBy == 'Description'
+                                            ? FluentIcons.sort_up
+                                            : FluentIcons.sort_down,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Status',
-                                  style: FluentTheme.of(context)
-                                      .typography
-                                      .bodyStrong,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      if (sortBy == 'Status') {
+                                        isAscending = !isAscending;
+                                      } else {
+                                        sortBy = 'Status';
+                                        isAscending = true;
+                                      }
+                                    });
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('Status'),
+                                      Icon(
+                                        isAscending && sortBy == 'Status'
+                                            ? FluentIcons.sort_up
+                                            : FluentIcons.sort_down,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Actions',
-                                  style: FluentTheme.of(context)
-                                      .typography
-                                      .bodyStrong,
-                                ),
+                              const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Actions'),
                               ),
                             ],
                           ),
