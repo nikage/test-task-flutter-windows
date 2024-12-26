@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:todo_app/injectable.dart';
 
@@ -22,298 +22,320 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('To-Do List'),
+    return FluentApp(
+      theme: FluentThemeData(
+        brightness: Brightness.light,
+        acrylicBackgroundColor: Colors.transparent,
       ),
-      body: Column(
-        children: [
-          // Filter Row
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Filter by Title',
+      home: ScaffoldPage(
+        header: const PageHeader(title: Text('To-Do List')),
+        content: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextBox(
+                      placeholder: 'Filter by Title',
+                      onChanged: (value) {
+                        setState(() {
+                          titleFilter = value.toLowerCase();
+                        });
+                      },
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        titleFilter = value.toLowerCase();
-                      });
-                    },
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Filter by Description',
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextBox(
+                      placeholder: 'Filter by Description',
+                      onChanged: (value) {
+                        setState(() {
+                          descriptionFilter = value.toLowerCase();
+                        });
+                      },
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        descriptionFilter = value.toLowerCase();
-                      });
-                    },
                   ),
-                ),
-                const SizedBox(width: 10),
-                DropdownButton<String>(
-                  value: statusFilter,
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        statusFilter = value;
-                      });
-                    }
-                  },
-                  items: const [
-                    DropdownMenuItem(value: 'All', child: Text('All')),
-                    DropdownMenuItem(value: 'Completed', child: Text('Completed')),
-                    DropdownMenuItem(value: 'Incomplete', child: Text('Incomplete')),
-                  ],
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  DropDownButton(
+                    title: Text(statusFilter),
+                    items: [
+                      MenuFlyoutItem(
+                        text: const Text('All'),
+                        onPressed: () {
+                          setState(() {
+                            statusFilter = 'All';
+                          });
+                        },
+                      ),
+                      MenuFlyoutItem(
+                        text: const Text('Completed'),
+                        onPressed: () {
+                          setState(() {
+                            statusFilter = 'Completed';
+                          });
+                        },
+                      ),
+                      MenuFlyoutItem(
+                        text: const Text('Incomplete'),
+                        onPressed: () {
+                          setState(() {
+                            statusFilter = 'Incomplete';
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          // To-Do Table
-          Expanded(
-            child: BlocBuilder<TodoBloc, TodoState>(
-              builder: (context, state) {
-                if (state is TodoLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is TodoLoaded) {
-                  var filteredTodos = state.todos.where((todo) {
-                    final matchesTitle =
-                    todo.title.toLowerCase().contains(titleFilter);
-                    final matchesDescription =
-                    todo.description.toLowerCase().contains(descriptionFilter);
-                    final matchesStatus = (statusFilter == 'All') ||
-                        (statusFilter == 'Completed' && todo.isCompleted) ||
-                        (statusFilter == 'Incomplete' && !todo.isCompleted);
+            Expanded(
+              child: BlocBuilder<TodoBloc, TodoState>(
+                builder: (context, state) {
+                  if (state is TodoLoading) {
+                    return const Center(child: ProgressBar());
+                  } else if (state is TodoLoaded) {
+                    var filteredTodos = state.todos.where((todo) {
+                      final matchesTitle =
+                          todo.title.toLowerCase().contains(titleFilter);
+                      final matchesDescription = todo.description
+                          .toLowerCase()
+                          .contains(descriptionFilter);
+                      final matchesStatus = (statusFilter == 'All') ||
+                          (statusFilter == 'Completed' && todo.isCompleted) ||
+                          (statusFilter == 'Incomplete' && !todo.isCompleted);
 
-                    return matchesTitle && matchesDescription && matchesStatus;
-                  }).toList();
+                      return matchesTitle &&
+                          matchesDescription &&
+                          matchesStatus;
+                    }).toList();
 
-                  // Apply sorting
-                  filteredTodos.sort((a, b) {
-                    int comparison = 0;
-                    switch (sortBy) {
-                      case 'Title':
-                        comparison = a.title.compareTo(b.title);
-                        break;
-                      case 'Description':
-                        comparison = a.description.compareTo(b.description);
-                        break;
-                      case 'Status':
-                        comparison = a.isCompleted ? (b.isCompleted ? 0 : 1) : (b.isCompleted ? -1 : 0);
-                        break;
-                    }
-                    return isAscending ? comparison : -comparison;
-                  });
+                    filteredTodos.sort((a, b) {
+                      int comparison = 0;
+                      switch (sortBy) {
+                        case 'Title':
+                          comparison = a.title.compareTo(b.title);
+                          break;
+                        case 'Description':
+                          comparison = a.description.compareTo(b.description);
+                          break;
+                        case 'Status':
+                          comparison = a.isCompleted
+                              ? (b.isCompleted ? 0 : 1)
+                              : (b.isCompleted ? -1 : 0);
+                          break;
+                      }
+                      return isAscending ? comparison : -comparison;
+                    });
 
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        sortColumnIndex: {
-                          'Title': 0,
-                          'Description': 1,
-                          'Status': 2
-                        }[sortBy],
-                        sortAscending: isAscending,
-                        columns: [
-                          DataColumn(
-                            label: const Text('Title'),
-                            onSort: (columnIndex, _) {
-                              setState(() {
-                                sortBy = 'Title';
-                                isAscending = !isAscending;
-                              });
-                            },
-                          ),
-                          DataColumn(
-                            label: const Text('Description'),
-                            onSort: (columnIndex, _) {
-                              setState(() {
-                                sortBy = 'Description';
-                                isAscending = !isAscending;
-                              });
-                            },
-                          ),
-                          DataColumn(
-                            label: const Text('Status'),
-                            onSort: (columnIndex, _) {
-                              setState(() {
-                                sortBy = 'Status';
-                                isAscending = !isAscending;
-                              });
-                            },
-                          ),
-                          const DataColumn(label: Text('Actions')),
-                        ],
-                        rows: filteredTodos.map((todo) {
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(todo.title)),
-                              DataCell(Text(todo.description)),
-                              DataCell(
-                                Text(todo.isCompleted ? 'Completed' : 'Incomplete'),
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Table(
+                        defaultColumnWidth: const FlexColumnWidth(),
+                        border: TableBorder.all(color: Colors.grey),
+                        columnWidths: const {
+                          0: FlexColumnWidth(2),
+                          1: FlexColumnWidth(3),
+                          2: FlexColumnWidth(1),
+                          3: FlexColumnWidth(2),
+                        },
+                        children: [
+                          TableRow(
+                            decoration: const BoxDecoration(color: Colors.grey),
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Title',
+                                  style: FluentTheme.of(context)
+                                      .typography
+                                      .bodyStrong,
+                                ),
                               ),
-                              DataCell(
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () {
-                                        _showEditDialog(context, todo);
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () {
-                                        DI<TodoBloc>().add(
-                                          DeleteTodoEvent(todo.id!),
-                                        );
-                                      },
-                                    ),
-                                  ],
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Description',
+                                  style: FluentTheme.of(context)
+                                      .typography
+                                      .bodyStrong,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Status',
+                                  style: FluentTheme.of(context)
+                                      .typography
+                                      .bodyStrong,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Actions',
+                                  style: FluentTheme.of(context)
+                                      .typography
+                                      .bodyStrong,
                                 ),
                               ),
                             ],
-                          );
-                        }).toList(),
+                          ),
+                          ...filteredTodos.map(
+                            (todo) => TableRow(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(todo.title),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(todo.description),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(todo.isCompleted
+                                      ? 'Completed'
+                                      : 'Incomplete'),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    children: [
+                                      Button(
+                                        child: const Icon(FluentIcons.edit),
+                                        onPressed: () {
+                                          _showEditDialog(context, todo);
+                                        },
+                                      ),
+                                      Button(
+                                        child: const Icon(FluentIcons.delete),
+                                        onPressed: () {
+                                          DI<TodoBloc>()
+                                              .add(DeleteTodoEvent(todo.id!));
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  );
-                }
-                return const Center(child: Text('No todos found'));
-              },
+                    );
+                  }
+                  return const Center(child: Text('No todos found'));
+                },
+              ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              final TextEditingController titleController =
-              TextEditingController();
-              final TextEditingController descriptionController =
-              TextEditingController();
+          ],
+        ),
+        bottomBar: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: FilledButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  final TextEditingController titleController =
+                      TextEditingController();
+                  final TextEditingController descriptionController =
+                      TextEditingController();
 
-              return AlertDialog(
-                title: const Text('Add Todo'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Title',
-                      ),
+                  return ContentDialog(
+                    title: const Text('Add Todo'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextBox(
+                          controller: titleController,
+                          placeholder: 'Title',
+                        ),
+                        const SizedBox(height: 10),
+                        TextBox(
+                          controller: descriptionController,
+                          placeholder: 'Description',
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Description',
+                    actions: [
+                      Button(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
                       ),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      final title = titleController.text;
-                      final description = descriptionController.text;
+                      FilledButton(
+                        onPressed: () {
+                          final title = titleController.text;
+                          final description = descriptionController.text;
 
-                      if (title.isNotEmpty && description.isNotEmpty) {
-                        final newTodo = Todo(
-                          title: title,
-                          description: description,
-                          isCompleted: false,
-                        );
+                          if (title.isNotEmpty && description.isNotEmpty) {
+                            final newTodo = Todo(
+                              title: title,
+                              description: description,
+                              isCompleted: false,
+                            );
 
-                        DI<TodoBloc>().add(AddTodoEvent(newTodo));
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: const Text('Add'),
-                  ),
-                ],
+                            DI<TodoBloc>().add(AddTodoEvent(newTodo));
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: const Text('Add'),
+                      ),
+                    ],
+                  );
+                },
               );
             },
-          );
-        },
-        child: const Icon(Icons.add),
+            child: const Text('Add Todo'),
+          ),
+        ),
       ),
     );
   }
 
   void _showEditDialog(BuildContext context, Todo todo) {
     final TextEditingController titleController =
-    TextEditingController(text: todo.title);
+        TextEditingController(text: todo.title);
     final TextEditingController descriptionController =
-    TextEditingController(text: todo.description);
+        TextEditingController(text: todo.description);
     bool isCompleted = todo.isCompleted;
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
+        return ContentDialog(
           title: const Text('Edit Todo'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
+              TextBox(
                 controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                ),
+                placeholder: 'Title',
               ),
               const SizedBox(height: 10),
-              TextField(
+              TextBox(
                 controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                ),
+                placeholder: 'Description',
               ),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Text('Completed:'),
-                  Checkbox(
-                    value: isCompleted,
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          isCompleted = value;
-                        });
-                      }
-                    },
-                  ),
-                ],
+              ToggleSwitch(
+                checked: isCompleted,
+                onChanged: (value) {
+                  setState(() {
+                    isCompleted = value!;
+                  });
+                },
+                content: const Text('Completed'),
               ),
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+            Button(
               child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 final updatedTodo = todo.copyWith(
                   title: titleController.text,
