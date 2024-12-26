@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
+          // Filter Row
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -78,41 +79,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                const Text('Sort by:'),
-                const SizedBox(width: 10),
-                DropdownButton<String>(
-                  value: sortBy,
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        sortBy = value;
-                      });
-                    }
-                  },
-                  items: const [
-                    DropdownMenuItem(value: 'Title', child: Text('Title')),
-                    DropdownMenuItem(
-                        value: 'Description', child: Text('Description')),
-                    DropdownMenuItem(value: 'Status', child: Text('Status')),
-                  ],
-                ),
-                const SizedBox(width: 10),
-                IconButton(
-                  icon: Icon(
-                      isAscending ? Icons.arrow_upward : Icons.arrow_downward),
-                  onPressed: () {
-                    setState(() {
-                      isAscending = !isAscending;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
+          // To-Do Table
           Expanded(
             child: BlocBuilder<TodoBloc, TodoState>(
               builder: (context, state) {
@@ -121,7 +88,7 @@ class _HomePageState extends State<HomePage> {
                 } else if (state is TodoLoaded) {
                   var filteredTodos = state.todos.where((todo) {
                     final matchesTitle =
-                        todo.title.toLowerCase().contains(titleFilter);
+                    todo.title.toLowerCase().contains(titleFilter);
                     final matchesDescription = todo.description
                         .toLowerCase()
                         .contains(descriptionFilter);
@@ -132,6 +99,7 @@ class _HomePageState extends State<HomePage> {
                     return matchesTitle && matchesDescription && matchesStatus;
                   }).toList();
 
+                  // Apply sorting
                   filteredTodos.sort((a, b) {
                     int comparison = 0;
                     switch (sortBy) {
@@ -150,70 +118,85 @@ class _HomePageState extends State<HomePage> {
                     return isAscending ? comparison : -comparison;
                   });
 
-                  return ListView.builder(
-                    itemCount: filteredTodos.length,
-                    itemBuilder: (context, index) {
-                      final todo = filteredTodos[index];
-                      return ListTile(
-                        title: Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                initialValue: todo.title,
-                                decoration: const InputDecoration(
-                                  hintText: 'Title',
-                                ),
-                                onChanged: (newValue) {
-                                  context.read<TodoBloc>().add(
-                                        UpdateTodoEvent(
-                                          todo.copyWith(title: newValue),
-                                        ),
-                                      );
-                                },
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        sortColumnIndex: {
+                          'Title': 0,
+                          'Description': 1,
+                          'Status': 2
+                        }[sortBy],
+                        sortAscending: isAscending,
+                        columns: [
+                          DataColumn(
+                            label: const Text('Title'),
+                            onSort: (columnIndex, _) {
+                              setState(() {
+                                sortBy = 'Title';
+                                isAscending = !isAscending;
+                              });
+                            },
+                          ),
+                          DataColumn(
+                            label: const Text('Description'),
+                            onSort: (columnIndex, _) {
+                              setState(() {
+                                sortBy = 'Description';
+                                isAscending = !isAscending;
+                              });
+                            },
+                          ),
+                          DataColumn(
+                            label: const Text('Status'),
+                            onSort: (columnIndex, _) {
+                              setState(() {
+                                sortBy = 'Status';
+                                isAscending = !isAscending;
+                              });
+                            },
+                          ),
+                          const DataColumn(label: Text('Actions')),
+                        ],
+                        rows: filteredTodos.map((todo) {
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                Text(todo.title),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: TextFormField(
-                                initialValue: todo.description,
-                                decoration: const InputDecoration(
-                                  hintText: 'Description',
-                                ),
-                                onChanged: (newValue) {
-                                  context.read<TodoBloc>().add(
-                                        UpdateTodoEvent(
-                                          todo.copyWith(description: newValue),
-                                        ),
-                                      );
-                                },
+                              DataCell(
+                                Text(todo.description),
                               ),
-                            ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                DI<TodoBloc>().add(DeleteTodoEvent(todo.id!));
-                              },
-                            ),
-                            Checkbox(
-                              value: todo.isCompleted,
-                              onChanged: (value) {
-                                context.read<TodoBloc>().add(
-                                      UpdateTodoEvent(
-                                        todo.copyWith(
-                                            isCompleted: value ?? false),
-                                      ),
-                                    );
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                              DataCell(
+                                Text(todo.isCompleted
+                                    ? 'Completed'
+                                    : 'Incomplete'),
+                              ),
+                              DataCell(
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () {
+                                        // Implement edit logic here
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () {
+                                        DI<TodoBloc>()
+                                            .add(DeleteTodoEvent(todo.id!));
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
                   );
                 }
                 return const Center(child: Text('No todos found'));
@@ -228,9 +211,9 @@ class _HomePageState extends State<HomePage> {
             context: context,
             builder: (context) {
               final TextEditingController titleController =
-                  TextEditingController();
+              TextEditingController();
               final TextEditingController descriptionController =
-                  TextEditingController();
+              TextEditingController();
 
               return AlertDialog(
                 title: const Text('Add Todo'),
