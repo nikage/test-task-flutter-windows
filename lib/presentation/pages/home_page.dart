@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage> {
       theme: FluentThemeData(
         brightness: Brightness.light,
         acrylicBackgroundColor: Colors.transparent,
+        scaffoldBackgroundColor: Colors.white,
       ),
       home: ScaffoldPage(
         header: const PageHeader(title: Text('To-Do List')),
@@ -237,6 +238,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               showDialog(
                 context: context,
+                barrierColor: Colors.black.withOpacity(0.3),
                 builder: (context) {
                   final TextEditingController titleController =
                       TextEditingController();
