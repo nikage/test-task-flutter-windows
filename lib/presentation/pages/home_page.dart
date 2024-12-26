@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/entities/todo.dart';
-import '../../injectable.dart';
 import '../bloc/todo_bloc.dart';
 
 class HomePage extends StatefulWidget {
@@ -70,10 +69,8 @@ class _HomePageState extends State<HomePage> {
                   },
                   items: const [
                     DropdownMenuItem(value: 'All', child: Text('All')),
-                    DropdownMenuItem(
-                        value: 'Completed', child: Text('Completed')),
-                    DropdownMenuItem(
-                        value: 'Incomplete', child: Text('Incomplete')),
+                    DropdownMenuItem(value: 'Completed', child: Text('Completed')),
+                    DropdownMenuItem(value: 'Incomplete', child: Text('Incomplete')),
                   ],
                 ),
               ],
@@ -89,9 +86,8 @@ class _HomePageState extends State<HomePage> {
                   var filteredTodos = state.todos.where((todo) {
                     final matchesTitle =
                     todo.title.toLowerCase().contains(titleFilter);
-                    final matchesDescription = todo.description
-                        .toLowerCase()
-                        .contains(descriptionFilter);
+                    final matchesDescription =
+                    todo.description.toLowerCase().contains(descriptionFilter);
                     final matchesStatus = (statusFilter == 'All') ||
                         (statusFilter == 'Completed' && todo.isCompleted) ||
                         (statusFilter == 'Incomplete' && !todo.isCompleted);
@@ -110,9 +106,7 @@ class _HomePageState extends State<HomePage> {
                         comparison = a.description.compareTo(b.description);
                         break;
                       case 'Status':
-                        comparison = a.isCompleted
-                            ? (b.isCompleted ? 0 : 1)
-                            : (b.isCompleted ? -1 : 0);
+                        comparison = a.isCompleted ? (b.isCompleted ? 0 : 1) : (b.isCompleted ? -1 : 0);
                         break;
                     }
                     return isAscending ? comparison : -comparison;
@@ -162,16 +156,10 @@ class _HomePageState extends State<HomePage> {
                         rows: filteredTodos.map((todo) {
                           return DataRow(
                             cells: [
+                              DataCell(Text(todo.title)),
+                              DataCell(Text(todo.description)),
                               DataCell(
-                                Text(todo.title),
-                              ),
-                              DataCell(
-                                Text(todo.description),
-                              ),
-                              DataCell(
-                                Text(todo.isCompleted
-                                    ? 'Completed'
-                                    : 'Incomplete'),
+                                Text(todo.isCompleted ? 'Completed' : 'Incomplete'),
                               ),
                               DataCell(
                                 Row(
@@ -179,14 +167,15 @@ class _HomePageState extends State<HomePage> {
                                     IconButton(
                                       icon: const Icon(Icons.edit),
                                       onPressed: () {
-                                        // Implement edit logic here
+                                        _showEditDialog(context, todo);
                                       },
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.delete),
                                       onPressed: () {
-                                        DI<TodoBloc>()
-                                            .add(DeleteTodoEvent(todo.id!));
+                                        context.read<TodoBloc>().add(
+                                          DeleteTodoEvent(todo.id!),
+                                        );
                                       },
                                     ),
                                   ],
@@ -254,7 +243,7 @@ class _HomePageState extends State<HomePage> {
                           isCompleted: false,
                         );
 
-                        DI<TodoBloc>().add(AddTodoEvent(newTodo));
+                        context.read<TodoBloc>().add(AddTodoEvent(newTodo));
                         Navigator.pop(context);
                       }
                     },
@@ -267,6 +256,78 @@ class _HomePageState extends State<HomePage> {
         },
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context, Todo todo) {
+    final TextEditingController titleController =
+    TextEditingController(text: todo.title);
+    final TextEditingController descriptionController =
+    TextEditingController(text: todo.description);
+    bool isCompleted = todo.isCompleted;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Todo'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Text('Completed:'),
+                  Checkbox(
+                    value: isCompleted,
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          isCompleted = value;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final updatedTodo = todo.copyWith(
+                  title: titleController.text,
+                  description: descriptionController.text,
+                  isCompleted: isCompleted,
+                );
+
+                context.read<TodoBloc>().add(UpdateTodoEvent(updatedTodo));
+                Navigator.pop(context);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
