@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:todo_app/injectable.dart';
 
 import '../../domain/entities/todo.dart';
 import '../bloc/todo_bloc.dart';
@@ -173,7 +174,7 @@ class _HomePageState extends State<HomePage> {
                                     IconButton(
                                       icon: const Icon(Icons.delete),
                                       onPressed: () {
-                                        context.read<TodoBloc>().add(
+                                        DI<TodoBloc>().add(
                                           DeleteTodoEvent(todo.id!),
                                         );
                                       },
@@ -243,7 +244,7 @@ class _HomePageState extends State<HomePage> {
                           isCompleted: false,
                         );
 
-                        context.read<TodoBloc>().add(AddTodoEvent(newTodo));
+                        DI<TodoBloc>().add(AddTodoEvent(newTodo));
                         Navigator.pop(context);
                       }
                     },
@@ -320,7 +321,7 @@ class _HomePageState extends State<HomePage> {
                   isCompleted: isCompleted,
                 );
 
-                context.read<TodoBloc>().add(UpdateTodoEvent(updatedTodo));
+                DI<TodoBloc>().add(UpdateTodoEvent(updatedTodo));
                 Navigator.pop(context);
               },
               child: const Text('Save'),
